@@ -22,19 +22,19 @@ jobs:
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY01 }}
-          REMOTE_HOST: ${{ secrets.HOST_DNS }}
-          REMOTE_USER: ${{ secrets.USERNAME }}
-          TARGET: ${{ secrets.PROD_TARGET_DIR }}
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.TEST_HOST_DNS }}
+          REMOTE_USER: ${{ secrets.TEST_USERNAME }}
+          TARGET: ${{ secrets.TEST_PROD_TARGET_DIR }}
 
-      - name: Restart Project
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST_DNS }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY01 }}
-          script: |
-            cd ${{ secrets.PROD_TARGET_DIR }}
-            . .venv/bin/activate
-            pip install -r requirements.txt
-            python3 manage.py runserver 0.0.0.0:8000
+      # - name: Restart Project
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.HOST_DNS }}
+      #     username: ${{ secrets.USERNAME }}
+      #     key: ${{ secrets.EC2_SSH_KEY01 }}
+      #     script: |
+      #       cd ${{ secrets.PROD_TARGET_DIR }}
+      #       . .venv/bin/activate
+      #       pip install -r requirements.txt
+      #       python3 manage.py runserver 0.0.0.0:8000
