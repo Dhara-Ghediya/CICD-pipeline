@@ -2,7 +2,9 @@ name: Deploy on EC2 Production
 
 on:
   push:
-    branches: [dev]
+    branches: 
+      - dev
+      - main
   pull_request:
     branches: [dev]
 
@@ -12,20 +14,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Debug labels
-        run: echo 'Labels ${{ toJson(github.event.pull_request.labels) }}'
-        continue-on-error: true
+      # - name: Debug labels
+      #   run: echo 'Labels ${{ toJson(github.event.pull_request.labels) }}'
+      #   continue-on-error: true
 
       - name: Checkout the files
         uses: actions/checkout@v2
 
-      - name: Deploy to Server
+      - name: Deploy to Testing Server
+        if: github.ref == 'refs/heads/dev'
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           REMOTE_HOST: ${{ secrets.TEST_HOST_DNS }}
           REMOTE_USER: ${{ secrets.TEST_USERNAME }}
           TARGET: ${{ secrets.TEST_PROD_TARGET_DIR }}
+
+      - name: Deploy to Production Server
+        if: github.ref == 'refs/heads/main'
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.PRODUCTION_HOST_DNS }}
+          REMOTE_USER: ${{ secrets.PRODUCTION_USERNAME }}
+          TARGET: ${{ secrets.PRODUCTION_PROD_TARGET_DIR }}
 
       # - name: Restart Project
       #   uses: appleboy/ssh-action@master
