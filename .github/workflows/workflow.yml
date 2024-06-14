@@ -1,0 +1,40 @@
+name: Deploy on EC2 Production
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev]
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Debug labels
+        run: echo 'Labels ${{ toJson(github.event.pull_request.labels) }}'
+        continue-on-error: true
+
+      - name: Checkout the files
+        uses: actions/checkout@v2
+
+      - name: Deploy to Server
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY01 }}
+          REMOTE_HOST: ${{ secrets.HOST_DNS }}
+          REMOTE_USER: ${{ secrets.USERNAME }}
+          TARGET: ${{ secrets.PROD_TARGET_DIR }}
+
+      - name: Restart Project
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_DNS }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY01 }}
+          script: |
+            cd ${{ secrets.PROD_TARGET_DIR }}
+            . .venv/bin/activate
+            pip install -r requirements.txt
+            python3 manage.py runserver 0.0.0.0:8000
